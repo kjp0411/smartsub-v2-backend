@@ -27,6 +27,12 @@ public class SecurityConfig {
                 // TODO: 손님용 조회 API(GET)만 permitAll()로 열고, 사장님용 등록/수정/삭제(POST/PATCH/DELETE)는 인가 권한(hasRole('OWNER')) 체크하도록 분리 필요
                 // TODO: QR 접속용 AI 가이드 대화 API 엔드포인트(/api/v1/guide/**) permitAll() 추가 필요
                 .requestMatchers("/api/v1/products/**").permitAll()
+                .requestMatchers("/api/v1/products").permitAll()
+
+                /* ======= [추가] 매장(Store) 테스트용 프리패스 경로 ======= */
+                // TODO: 서비스 오픈 시 매장 등록/수정/삭제는 플랫폼 관리자(ADMIN) 또는 해당 매장 OWNER만 가능하도록 인가 변경 필요
+                .requestMatchers("/api/v1/stores/**").permitAll()
+                .requestMatchers("/api/v1/stores").permitAll()
 
                 // 그 외의 요청은 인증 필요
                 .anyRequest().authenticated()
