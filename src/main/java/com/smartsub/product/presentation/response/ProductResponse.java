@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public record ProductResponse(
     UUID productId,
+    UUID storeId,
     String name,
     String description,
     DescriptionSource descriptionSource,
@@ -21,6 +22,7 @@ public record ProductResponse(
     public static ProductResponse from(ProductResult result) {
         return new ProductResponse(
             result.productId(),
+            result.storeId(),
             result.name(),
             result.description(),
             result.descriptionSource(),
