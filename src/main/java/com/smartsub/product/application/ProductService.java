@@ -24,6 +24,7 @@ public class ProductService {
     @Transactional
     public ProductResult createProduct(ProductCreateCommand command) {
         Product product = Product.create(
+            command.storeId(),
             command.name(),
             command.description(),
             command.descriptionSource(),

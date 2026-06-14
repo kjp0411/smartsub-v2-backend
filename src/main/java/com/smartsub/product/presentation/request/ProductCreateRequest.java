@@ -10,8 +10,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record ProductCreateRequest(
+    @NotNull(message = "매장 ID는 필수입니다.")
+    UUID storeId,
 
     @NotBlank(message = "상품명은 필수입니다.")
     @Size(max = 100, message = "상품명은 최대 100자까지 입력할 수 있습니다.")
@@ -40,6 +43,7 @@ public record ProductCreateRequest(
 
     public ProductCreateCommand toCommand() {
         return new ProductCreateCommand(
+            storeId,
             name,
             description,
             descriptionSource,
