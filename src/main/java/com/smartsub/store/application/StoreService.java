@@ -1,5 +1,7 @@
 package com.smartsub.store.application;
 
+import com.smartsub.global.exception.BusinessException;
+import com.smartsub.global.exception.ErrorCode;
 import com.smartsub.store.application.dto.StoreCreateCommand;
 import com.smartsub.store.application.dto.StoreResult;
 import com.smartsub.store.application.dto.StoreUpdateCommand;
@@ -72,6 +74,6 @@ public class StoreService {
 
     private Store getActiveStore(UUID storeId) {
         return storeRepository.findByIdAndDeletedAtIsNull(storeId)
-            .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
     }
 }

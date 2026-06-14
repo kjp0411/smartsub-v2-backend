@@ -1,5 +1,7 @@
 package com.smartsub.product.application;
 
+import com.smartsub.global.exception.BusinessException;
+import com.smartsub.global.exception.ErrorCode;
 import com.smartsub.product.application.dto.ProductCreateCommand;
 import com.smartsub.product.application.dto.ProductResult;
 import com.smartsub.product.application.dto.ProductUpdateCommand;
@@ -78,6 +80,6 @@ public class ProductService {
 
     private Product getActiveProduct(UUID productId) {
         return productRepository.findByIdAndDeletedAtIsNull(productId)
-            .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 }
