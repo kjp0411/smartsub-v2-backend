@@ -14,7 +14,15 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
+@FilterDef(
+    name = "tenantFilter",
+    parameters = @ParamDef(name = "storeId", type = UUID.class)
+)
+@Filter(name = "tenantFilter", condition = "store_id = :storeId")
 @Getter
 @Entity
 @Table(name = "p_products")
@@ -25,6 +33,9 @@ public class Product extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
+
+    @Column(name = "store_id", nullable = false, updatable = false)
+    private UUID storeId;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -51,6 +62,7 @@ public class Product extends BaseEntity {
     private ProductStatus status;
 
     private Product(
+        UUID storeId,
         String name,
         String description,
         DescriptionSource descriptionSource,
@@ -59,6 +71,7 @@ public class Product extends BaseEntity {
         ProductUnit unit,
         ProductStatus status
     ) {
+        this.storeId = storeId;
         this.name = name;
         this.description = description;
         this.descriptionSource = descriptionSource;
@@ -69,6 +82,7 @@ public class Product extends BaseEntity {
     }
 
     public static Product create(
+        UUID storeId,
         String name,
         String description,
         DescriptionSource descriptionSource,
@@ -77,7 +91,7 @@ public class Product extends BaseEntity {
         ProductUnit unit,
         ProductStatus status
     ) {
-        return new Product(name, description, descriptionSource, price, stockQuantity, unit, status);
+        return new Product(storeId, name, description, descriptionSource, price, stockQuantity, unit, status);
     }
 
     public void update(
