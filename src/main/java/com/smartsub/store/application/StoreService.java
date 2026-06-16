@@ -10,6 +10,7 @@ import com.smartsub.store.domain.StoreRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StoreService {
-
-    private static final UUID SYSTEM_USER_ID =
-        UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     private final StoreRepository storeRepository;
 
@@ -69,7 +67,10 @@ public class StoreService {
     public void deleteStore(UUID storeId) {
         Store store = getActiveStore(storeId);
 
-        store.delete(SYSTEM_USER_ID);
+        UUID userId = (UUID) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        store.delete(userId);
     }
 
     private Store getActiveStore(UUID storeId) {

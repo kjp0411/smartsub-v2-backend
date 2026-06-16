@@ -10,6 +10,7 @@ import com.smartsub.product.domain.ProductRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductService {
-
-    private static final UUID SYSTEM_USER_ID =
-        UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     private final ProductRepository productRepository;
 
@@ -75,7 +73,10 @@ public class ProductService {
     public void deleteProduct(UUID productId) {
         Product product = getActiveProduct(productId);
 
-        product.delete(SYSTEM_USER_ID);
+        UUID userId = (UUID) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        product.delete(userId);
     }
 
     private Product getActiveProduct(UUID productId) {

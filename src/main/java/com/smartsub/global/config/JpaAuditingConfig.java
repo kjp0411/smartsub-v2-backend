@@ -6,16 +6,30 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Configuration
 @EnableJpaAuditing
 public class JpaAuditingConfig {
 
-    private static final UUID SYSTEM_USER_ID =
-        UUID.fromString("00000000-0000-0000-0000-000000000000");
-
     @Bean
     public AuditorAware<UUID> auditorAware() {
-        return () -> Optional.of(SYSTEM_USER_ID);
+        return () -> {
+            Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return Optional.empty();
+            }
+
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof UUID userId) {
+                return Optional.of(userId);
+            }
+
+            return Optional.empty();
+        };
     }
 }
