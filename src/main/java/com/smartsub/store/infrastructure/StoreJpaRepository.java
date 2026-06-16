@@ -10,5 +10,7 @@ public interface StoreJpaRepository extends JpaRepository<Store, UUID> {
 
     Optional<Store> findByIdAndDeletedAtIsNull(UUID storeId);
 
+    Optional<Store> findByUserIdAndDeletedAtIsNull(UUID userId);
+
     List<Store> findAllByDeletedAtIsNull();
 }

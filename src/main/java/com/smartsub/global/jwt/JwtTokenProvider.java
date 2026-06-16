@@ -24,7 +24,7 @@ public class JwtTokenProvider {
         this.accessTokenExpiration = accessTokenExpiration;
     }
 
-    public String generateAccessToken(UUID userId, String email, String role) {
+    public String generateAccessToken(UUID userId, String email, String role, UUID storeId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenExpiration);
 
@@ -32,6 +32,7 @@ public class JwtTokenProvider {
             .subject(userId.toString())
             .claim("email", email)
             .claim("role", role)
+            .claim("storeId", storeId != null ? storeId.toString() : null)
             .issuedAt(now)
             .expiration(expiry)
             .signWith(secretKey)
@@ -61,5 +62,10 @@ public class JwtTokenProvider {
 
     public String getRole(String token) {
         return parseClaims(token).get("role", String.class);
+    }
+
+    public UUID getStoreId(String token) {
+        String storeId = parseClaims(token).get("storeId", String.class);
+        return storeId != null ? UUID.fromString(storeId) : null;
     }
 }
