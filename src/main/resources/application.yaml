@@ -17,6 +17,21 @@ spring:
         show_sql: true
     open-in-view: false
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: text-embedding-3-small
+      chat:
+        options:
+          model: gpt-4o-mini
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536
+
 server:
   port: 8080
 
