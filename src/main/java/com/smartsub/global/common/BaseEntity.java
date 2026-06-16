@@ -22,7 +22,7 @@ public class BaseEntity {
     private LocalDateTime createdAt;
 
     @CreatedBy
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private UUID createdBy;
 
     @LastModifiedDate
@@ -30,7 +30,7 @@ public class BaseEntity {
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
-    @Column(nullable = false)
+    @Column
     private UUID updatedBy;
 
     @Column
