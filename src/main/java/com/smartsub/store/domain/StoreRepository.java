@@ -10,5 +10,7 @@ public interface StoreRepository {
 
     Optional<Store> findByIdAndDeletedAtIsNull(UUID storeId);
 
+    Optional<Store> findByUserIdAndDeletedAtIsNull(UUID userId);
+
     List<Store> findAllByDeletedAtIsNull();
 }

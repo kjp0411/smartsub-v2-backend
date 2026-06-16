@@ -3,12 +3,14 @@ package com.smartsub.user.application;
 import com.smartsub.global.exception.BusinessException;
 import com.smartsub.global.exception.ErrorCode;
 import com.smartsub.global.jwt.JwtTokenProvider;
+import com.smartsub.store.domain.StoreRepository;
 import com.smartsub.user.application.dto.AuthResult;
 import com.smartsub.user.application.dto.SignInCommand;
 import com.smartsub.user.application.dto.SignUpCommand;
 import com.smartsub.user.domain.User;
 import com.smartsub.user.domain.UserRepository;
 import com.smartsub.user.domain.UserRole;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -49,10 +52,15 @@ public class AuthService {
             throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
+        UUID storeId = storeRepository.findByUserIdAndDeletedAtIsNull(user.getId())
+            .map(store -> store.getId())
+            .orElse(null);
+
         String token = jwtTokenProvider.generateAccessToken(
             user.getId(),
             user.getEmail(),
-            user.getRole().name()
+            user.getRole().name(),
+            storeId
         );
 
         return new AuthResult(token);
