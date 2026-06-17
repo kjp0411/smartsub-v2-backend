@@ -2,6 +2,7 @@ package com.smartsub.global.config;
 
 import com.smartsub.global.jwt.JwtAuthenticationFilter;
 import com.smartsub.global.jwt.JwtTokenProvider;
+import com.smartsub.global.jwt.TokenBlacklistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,7 +44,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .addFilterBefore(
-                new JwtAuthenticationFilter(jwtTokenProvider),
+                new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistRepository),
                 UsernamePasswordAuthenticationFilter.class
             );
 
