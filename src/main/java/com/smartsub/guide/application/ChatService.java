@@ -1,12 +1,12 @@
 package com.smartsub.guide.application;
 
 import com.smartsub.guide.application.dto.ChatCommand;
+import com.smartsub.guide.application.dto.ChatLogEvent;
 import com.smartsub.guide.application.dto.ChatResult;
-import com.smartsub.guide.domain.ChatLog;
-import com.smartsub.guide.domain.ChatLogRepository;
 import com.smartsub.guide.domain.GuideDocumentRepository;
 import com.smartsub.guide.domain.GuideDocumentProjection;
 import com.smartsub.guide.domain.Language;
+import com.smartsub.guide.infrastructure.ChatLogProducer;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class ChatService {
     private final ChatClient chatClient;
     private final EmbeddingService embeddingService;
     private final GuideDocumentRepository guideDocumentRepository;
-    private final ChatLogRepository chatLogRepository;
+    private final ChatLogProducer chatLogProducer;
 
     public ChatResult chat(ChatCommand command) {
         String questionEmbedding = embeddingService.embedToString(command.question());
@@ -52,18 +52,14 @@ public class ChatService {
             .content();
 
         Language language = detectLanguage(command.question());
-        ChatLog chatLog = ChatLog.create(
+        ChatLogEvent event = new ChatLogEvent(
             command.storeId(),
             command.tableNumber(),
             command.question(),
             answer,
             language
         );
-
-        long start = System.currentTimeMillis();
-        chatLogRepository.save(chatLog);
-        long elapsed = System.currentTimeMillis() - start;
-        log.info("채팅 로그 저장 시간: {}ms", elapsed);
+        chatLogProducer.send(event);
 
         return new ChatResult(answer);
     }
