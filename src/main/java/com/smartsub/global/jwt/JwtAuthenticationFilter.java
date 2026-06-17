@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
     @Override
     protected void doFilterInternal(
@@ -27,6 +28,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
+            if (tokenBlacklistRepository.isBlacklisted(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write(
+                    "{\"status\":401,\"code\":\"INVALID_TOKEN\",\"message\":\"로그아웃된 토큰입니다.\"}"
+                );
+                return;
+            }
+
             UUID userId = jwtTokenProvider.getUserId(token);
             String role = jwtTokenProvider.getRole(token);
 

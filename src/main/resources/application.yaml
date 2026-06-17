@@ -46,6 +46,11 @@ spring:
         spring.json.use.type.headers: false
         spring.json.value.default.type: com.smartsub.guide.application.dto.ChatLogEvent
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 server:
   port: 8080
 

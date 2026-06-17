@@ -68,4 +68,9 @@ public class JwtTokenProvider {
         String storeId = parseClaims(token).get("storeId", String.class);
         return storeId != null ? UUID.fromString(storeId) : null;
     }
+
+    public long getRemainingExpiration(String token) {
+        Date expiration = parseClaims(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
+    }
 }

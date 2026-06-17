@@ -3,6 +3,7 @@ package com.smartsub.user.application;
 import com.smartsub.global.exception.BusinessException;
 import com.smartsub.global.exception.ErrorCode;
 import com.smartsub.global.jwt.JwtTokenProvider;
+import com.smartsub.global.jwt.TokenBlacklistRepository;
 import com.smartsub.store.domain.StoreRepository;
 import com.smartsub.user.application.dto.AuthResult;
 import com.smartsub.user.application.dto.SignInCommand;
@@ -25,6 +26,7 @@ public class AuthService {
     private final StoreRepository storeRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
     @Transactional
     public void signUp(SignUpCommand command) {
@@ -64,5 +66,12 @@ public class AuthService {
         );
 
         return new AuthResult(token);
+    }
+
+    public void signOut(String token) {
+        long remainingExpiration = jwtTokenProvider.getRemainingExpiration(token);
+        if (remainingExpiration > 0) {
+            tokenBlacklistRepository.addToBlacklist(token, remainingExpiration);
+        }
     }
 }
