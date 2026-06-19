@@ -51,6 +51,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: gradlew 실행 권한 부여
+        run: chmod +x ./gradlew
+
       - name: pgvector 확장 활성화
         run: |
           PGPASSWORD=${{ secrets.TEST_DB_PASSWORD }} psql \
