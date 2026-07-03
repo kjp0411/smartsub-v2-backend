@@ -1,6 +1,7 @@
 package com.smartsub.guide.infrastructure;
 
 import com.smartsub.guide.application.dto.ChatLogEvent;
+import com.smartsub.guide.domain.ChatCategory;
 import com.smartsub.guide.domain.ChatLog;
 import com.smartsub.guide.domain.ChatLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,15 @@ public class ChatLogConsumer {
     public void consume(ChatLogEvent event) {
         long start = System.currentTimeMillis();
 
+        ChatCategory category = ChatCategory.from(event.category());
+
         ChatLog chatLog = ChatLog.create(
             event.storeId(),
             event.tableNumber(),
             event.question(),
             event.answer(),
-            event.language()
+            event.language(),
+            category
         );
         chatLogRepository.save(chatLog);
 
