@@ -8,6 +8,7 @@ public record ChatLogEvent(
    String tableNumber,
    String question,
    String answer,
-   Language language
+   Language language,
+   String category
 ) {
 }

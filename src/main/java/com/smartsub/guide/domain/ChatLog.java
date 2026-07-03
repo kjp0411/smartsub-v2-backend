@@ -8,10 +8,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Entity
@@ -40,15 +42,24 @@ public class ChatLog {
     @Column(name = "language", nullable = false)
     private Language language;
 
-    private ChatLog(UUID storeId, String tableNumber, String question, String answer, Language language) {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private ChatCategory category;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    private ChatLog(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category) {
         this.storeId = storeId;
         this.tableNumber = tableNumber;
         this.question = question;
         this.answer = answer;
         this.language = language;
+        this.category = category;
     }
 
-    public static ChatLog create(UUID storeId, String tableNumber, String question, String answer, Language language) {
-        return new ChatLog(storeId, tableNumber, question, answer, language);
+    public static ChatLog create(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category) {
+        return new ChatLog(storeId, tableNumber, question, answer, language, category);
     }
 }

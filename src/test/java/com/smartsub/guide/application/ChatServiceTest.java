@@ -69,13 +69,16 @@ class ChatServiceTest {
         when(chatClient.prompt()).thenReturn(requestSpec);
         when(requestSpec.user(anyString())).thenReturn(requestSpec);
         when(requestSpec.call()).thenReturn(callResponseSpec);
-        when(callResponseSpec.content()).thenReturn("화장실은 1층 엘리베이터 옆에 있습니다.");
+        when(callResponseSpec.entity(ChatService.LlmChatResponse.class))
+            .thenReturn(new ChatService.LlmChatResponse(
+                "화장실은 1층 엘리베이터 옆에 있습니다.", "FACILITY"));
 
         // When
         ChatResult result = chatService.chat(command);
 
         // Then
         assertThat(result.answer()).isEqualTo("화장실은 1층 엘리베이터 옆에 있습니다.");
+        assertThat(result.category()).isEqualTo("FACILITY");
         verify(chatLogProducer).send(any(ChatLogEvent.class));
     }
 }

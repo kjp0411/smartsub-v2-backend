@@ -17,9 +17,10 @@ class ChatLogTest {
         String question = "화장실이 어디에 있나요?";
         String answer = "화장실은 1층 엘리베이터 옆에 있습니다.";
         Language language = Language.KOREAN;
+        ChatCategory category = ChatCategory.FACILITY;
 
         // When
-        ChatLog chatLog = ChatLog.create(storeId, tableNumber, question, answer, language);
+        ChatLog chatLog = ChatLog.create(storeId, tableNumber, question, answer, language, category);
 
         // Then
         assertThat(chatLog.getStoreId()).isEqualTo(storeId);
@@ -27,5 +28,6 @@ class ChatLogTest {
         assertThat(chatLog.getQuestion()).isEqualTo(question);
         assertThat(chatLog.getAnswer()).isEqualTo(answer);
         assertThat(chatLog.getLanguage()).isEqualTo(language);
+        assertThat(chatLog.getCategory()).isEqualTo(category);
     }
 }
