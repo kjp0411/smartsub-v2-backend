@@ -95,7 +95,7 @@ class GuideControllerTest {
     void chat_success() throws Exception {
         // Given
         ChatRequest request = new ChatRequest(UUID.randomUUID(), "3", "영업시간이 언제예요?");
-        ChatResult mockResult = new ChatResult("영업시간은 11시부터 22시까지입니다.");
+        ChatResult mockResult = new ChatResult("영업시간은 11시부터 22시까지입니다.", "HOURS");
 
         when(chatService.chat(any())).thenReturn(mockResult);
 
@@ -104,7 +104,8 @@ class GuideControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.answer").value("영업시간은 11시부터 22시까지입니다."));
+            .andExpect(jsonPath("$.answer").value("영업시간은 11시부터 22시까지입니다."))
+            .andExpect(jsonPath("$.category").doesNotExist());
     }
 
     @Test
