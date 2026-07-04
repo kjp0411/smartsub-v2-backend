@@ -56,7 +56,7 @@ class WeeklyReportSchedulerTest {
         weeklyReportScheduler.generateWeeklyReports(weekStart, weekEnd);
 
         // Then
-        List<WeeklyReport> reports = weeklyReportRepository.findAll().stream()
+        List<WeeklyReport> reports = weeklyReportRepository.findAllByDeletedAtIsNull().stream()
             .filter(r -> r.getStoreId().equals(store.getId()))
             .toList();
 
@@ -84,7 +84,7 @@ class WeeklyReportSchedulerTest {
         weeklyReportScheduler.generateWeeklyReports(weekStart, weekEnd);
 
         // Then
-        long count = weeklyReportRepository.findAll().stream()
+        long count = weeklyReportRepository.findAllByDeletedAtIsNull().stream()
             .filter(r -> r.getStoreId().equals(store.getId()))
             .count();
         assertThat(count).isEqualTo(1L);
@@ -132,10 +132,10 @@ class WeeklyReportSchedulerTest {
         weeklyReportScheduler.generateWeeklyReports(weekStart, weekEnd);
 
         // Then
-        WeeklyReport reportA = weeklyReportRepository.findAll().stream()
+        WeeklyReport reportA = weeklyReportRepository.findAllByDeletedAtIsNull().stream()
             .filter(r -> r.getStoreId().equals(storeA.getId()))
             .findFirst().orElseThrow();
-        WeeklyReport reportB = weeklyReportRepository.findAll().stream()
+        WeeklyReport reportB = weeklyReportRepository.findAllByDeletedAtIsNull().stream()
             .filter(r -> r.getStoreId().equals(storeB.getId()))
             .findFirst().orElseThrow();
 
