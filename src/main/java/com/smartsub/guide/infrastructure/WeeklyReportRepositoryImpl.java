@@ -4,6 +4,7 @@ import com.smartsub.guide.domain.WeeklyReport;
 import com.smartsub.guide.domain.WeeklyReportRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -25,7 +26,12 @@ public class WeeklyReportRepositoryImpl implements WeeklyReportRepository {
     }
 
     @Override
-    public List<WeeklyReport> findAll() {
-        return weeklyReportJpaRepository.findAll();
+    public List<WeeklyReport> findAllByDeletedAtIsNull() {
+        return weeklyReportJpaRepository.findAllByDeletedAtIsNull();
+    }
+
+    @Override
+    public Optional<WeeklyReport> findByIdAndDeletedAtIsNull(UUID reportId) {
+        return weeklyReportJpaRepository.findByIdAndDeletedAtIsNull(reportId);
     }
 }
