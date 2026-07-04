@@ -2,6 +2,7 @@ package com.smartsub.store.infrastructure;
 
 import com.smartsub.store.domain.Store;
 import com.smartsub.store.domain.StoreRepository;
+import com.smartsub.store.domain.StoreStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,5 +33,10 @@ public class StoreRepositoryImpl implements StoreRepository {
     @Override
     public List<Store> findAllByDeletedAtIsNull() {
         return storeJpaRepository.findAllByDeletedAtIsNull();
+    }
+
+    @Override
+    public List<Store> findAllByStatusAndDeletedAtIsNull(StoreStatus status) {
+        return storeJpaRepository.findAllByStatusAndDeletedAtIsNull(status);
     }
 }
