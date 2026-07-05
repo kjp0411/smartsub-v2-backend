@@ -31,6 +31,11 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
 
     @Override
+    public List<Store> findAllByUserIdAndDeletedAtIsNull(UUID userId) {
+        return storeJpaRepository.findAllByUserIdAndDeletedAtIsNull(userId);
+    }
+
+    @Override
     public List<Store> findAllByDeletedAtIsNull() {
         return storeJpaRepository.findAllByDeletedAtIsNull();
     }

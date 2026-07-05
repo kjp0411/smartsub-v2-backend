@@ -37,21 +37,23 @@ public class StoreService {
     }
 
     public List<StoreResult> getStores() {
-        return storeRepository.findAllByDeletedAtIsNull()
+        UUID userId = currentUserId();
+
+        return storeRepository.findAllByUserIdAndDeletedAtIsNull(userId)
             .stream()
             .map(StoreResult::from)
             .toList();
     }
 
     public StoreResult getStore(UUID storeId) {
-        Store store = getActiveStore(storeId);
+        Store store = getOwnedStore(storeId);
 
         return StoreResult.from(store);
     }
 
     @Transactional
     public StoreResult updateStore(UUID storeId, StoreUpdateCommand command) {
-        Store store = getActiveStore(storeId);
+        Store store = getOwnedStore(storeId);
 
         store.update(
             command.name(),
@@ -65,16 +67,27 @@ public class StoreService {
 
     @Transactional
     public void deleteStore(UUID storeId) {
-        Store store = getActiveStore(storeId);
-
-        UUID userId = (UUID) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
+        Store store = getOwnedStore(storeId);
+        UUID userId = currentUserId();
 
         store.delete(userId);
     }
 
-    private Store getActiveStore(UUID storeId) {
-        return storeRepository.findByIdAndDeletedAtIsNull(storeId)
+    private Store getOwnedStore(UUID storeId) {
+        UUID userId = currentUserId();
+
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
             .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
+
+        if (!store.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        return store;
+    }
+
+    private UUID currentUserId() {
+        return (UUID) SecurityContextHolder.getContext()
+            .getAuthentication().getPrincipal();
     }
 }
