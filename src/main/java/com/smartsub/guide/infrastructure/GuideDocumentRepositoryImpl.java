@@ -24,6 +24,11 @@ public class GuideDocumentRepositoryImpl implements GuideDocumentRepository {
     }
 
     @Override
+    public List<GuideDocumentProjection> findAllByStoreId(UUID storeId) {
+        return guideDocumentJpaRepository.findAllByStoreId(storeId);
+    }
+
+    @Override
     public void deleteAllByStoreId(UUID storeId) {
         guideDocumentJpaRepository.deleteAllByStoreId(storeId);
     }

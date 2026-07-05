@@ -35,5 +35,14 @@ public interface GuideDocumentJpaRepository extends JpaRepository<GuideDocument,
         @Param("topK") int topK
     );
 
-    void deleteAllByStoreId(UUID storeId);
+    @Query(value = """
+        SELECT id, store_id, content
+        FROM p_guide_documents
+        WHERE store_id = CAST(:storeId AS uuid)
+        """, nativeQuery = true)
+    List<GuideDocumentProjection> findAllByStoreId(@Param("storeId") UUID storeId);
+
+    @Modifying
+    @Query(value = "DELETE FROM p_guide_documents WHERE store_id = CAST(:storeId AS uuid)", nativeQuery = true)
+    void deleteAllByStoreId(@Param("storeId") UUID storeId);
 }
