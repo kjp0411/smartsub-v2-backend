@@ -13,6 +13,7 @@ public enum ErrorCode {
 
     // Store
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "STORE_NOT_FOUND", "매장을 찾을 수 없습니다."),
+    STORE_ALREADY_EXISTS(HttpStatus.CONFLICT, "STORE_ALREADY_EXISTS", "이미 매장을 보유하고 있습니다. 현재 1인 1매장만 지원됩니다."),
 
     // Tenant
     INVALID_TENANT(HttpStatus.BAD_REQUEST, "INVALID_TENANT", "유효하지 않은 테넌트입니다."),
