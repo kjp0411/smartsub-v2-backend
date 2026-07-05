@@ -23,6 +23,14 @@ public class StoreService {
 
     @Transactional
     public StoreResult createStore(StoreCreateCommand command) {
+        boolean alreadyHasStore = !storeRepository
+            .findAllByUserIdAndDeletedAtIsNull(command.userId())
+            .isEmpty();
+
+        if (alreadyHasStore) {
+            throw new BusinessException(ErrorCode.STORE_ALREADY_EXISTS);
+        }
+
         Store store = Store.create(
             command.userId(),
             command.name(),
