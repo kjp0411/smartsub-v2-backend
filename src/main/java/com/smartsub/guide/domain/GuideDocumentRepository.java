@@ -9,5 +9,7 @@ public interface GuideDocumentRepository {
 
     List<GuideDocumentProjection> findTopKBySimilarity(UUID storeId, String embedding, int topK);
 
+    List<GuideDocumentProjection> findAllByStoreId(UUID storeId);
+
     void deleteAllByStoreId(UUID storeId);
 }

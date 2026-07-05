@@ -54,8 +54,14 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
+                // 인증 없이 허용
                 .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers("/api/v1/guide/**").permitAll()
+                // 손님용 AI 챗봇 — 비인증 QR 접근
+                .requestMatchers("/api/v1/guide/chat").permitAll()
+                // 사장님용 가이드 문서 관리 — 인증 필요
+                .requestMatchers("/api/v1/guide/embed").authenticated()
+                .requestMatchers("/api/v1/guide/documents").authenticated()
+                // 나머지는 인증 필요
                 .anyRequest().authenticated()
             )
             .addFilterBefore(
