@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.smartsub.global.jwt.JwtTokenProvider;
 import com.smartsub.guide.application.ChatService;
 import com.smartsub.guide.application.EmbeddingService;
 import com.smartsub.guide.application.dto.ChatResult;
@@ -15,6 +16,7 @@ import com.smartsub.guide.presentation.request.ChatRequest;
 import com.smartsub.guide.presentation.request.GuideEmbedRequest;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +38,24 @@ class GuideControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     @MockitoBean
     private ChatService chatService;
 
     @MockitoBean
     private EmbeddingService embeddingService;
+
+    private String accessToken;
+
+    @BeforeEach
+    void setUpToken() {
+        UUID userId = UUID.randomUUID();
+        accessToken = jwtTokenProvider.generateAccessToken(
+            userId, "owner@smartsub.com", "USER", UUID.randomUUID()
+        );
+    }
 
     @Test
     @DisplayName("가이드 텍스트 임베딩 등록 성공 시 200 OK를 반환한다")
@@ -53,6 +68,7 @@ class GuideControllerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/guide/embed")
+                .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk());
@@ -72,6 +88,7 @@ class GuideControllerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/guide/embed")
+                .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidJson))
             .andExpect(status().isBadRequest());
@@ -85,6 +102,7 @@ class GuideControllerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/guide/embed")
+                .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -99,7 +117,7 @@ class GuideControllerTest {
 
         when(chatService.chat(any())).thenReturn(mockResult);
 
-        // When & Then
+        // When & Then — /chat은 인증 없이 여전히 호출 가능해야 함
         mockMvc.perform(post("/api/v1/guide/chat")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
