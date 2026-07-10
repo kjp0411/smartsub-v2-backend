@@ -2,6 +2,7 @@ package com.smartsub.guide.infrastructure;
 
 import com.smartsub.guide.domain.GuideDocumentProjection;
 import com.smartsub.guide.domain.GuideDocumentRepository;
+import com.smartsub.guide.domain.GuideDocumentScoredProjection;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,13 @@ public class GuideDocumentRepositoryImpl implements GuideDocumentRepository {
     @Override
     public List<GuideDocumentProjection> findTopKBySimilarity(UUID storeId, String embedding, int topK) {
         return guideDocumentJpaRepository.findTopKBySimilarity(storeId.toString(), embedding, topK);
+    }
+
+    @Override
+    public List<GuideDocumentScoredProjection> findTopKBySimilarityWithScore(
+        UUID storeId, String embedding, int topK
+    ) {
+        return guideDocumentJpaRepository.findTopKBySimilarityWithScore(storeId.toString(), embedding, topK);
     }
 
     @Override
