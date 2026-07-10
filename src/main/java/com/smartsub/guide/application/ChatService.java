@@ -25,11 +25,13 @@ public class ChatService {
     private final EmbeddingService embeddingService;
     private final GuideDocumentRepository guideDocumentRepository;
     private final ChatLogProducer chatLogProducer;
+    private final HydeQueryExpander hydeQueryExpander;
 
     record LlmChatResponse(String answer, String category) {}
 
     public ChatResult chat(ChatCommand command) {
-        String questionEmbedding = embeddingService.embedToString(command.question());
+        String hypotheticalAnswer = hydeQueryExpander.expand(command.question());
+        String questionEmbedding = embeddingService.embedToString(hypotheticalAnswer);
 
         List<GuideDocumentProjection> documents = guideDocumentRepository
             .findTopKBySimilarity(command.storeId(), questionEmbedding, 3);
