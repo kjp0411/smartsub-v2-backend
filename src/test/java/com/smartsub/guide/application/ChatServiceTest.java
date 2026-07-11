@@ -43,6 +43,9 @@ class ChatServiceTest {
     @Mock
     private ChatClient.CallResponseSpec callResponseSpec;
 
+    @Mock
+    private HydeQueryExpander hydeQueryExpander;
+
     @InjectMocks
     private ChatService chatService;
 
@@ -62,7 +65,9 @@ class ChatServiceTest {
             public String getContent() { return "화장실은 1층 엘리베이터 옆에 있습니다."; }
         };
 
-        when(embeddingService.embedToString(command.question())).thenReturn("[0.1, 0.2, 0.3]");
+        when(hydeQueryExpander.expand(command.question()))
+            .thenReturn("화장실 위치를 안내하는 답변입니다.");
+        when(embeddingService.embedToString(anyString())).thenReturn("[0.1, 0.2, 0.3]");
         when(guideDocumentRepository.findTopKBySimilarity(storeId, "[0.1, 0.2, 0.3]", 3))
             .thenReturn(List.of(projection));
 

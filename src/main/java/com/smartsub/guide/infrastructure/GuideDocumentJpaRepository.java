@@ -2,6 +2,7 @@ package com.smartsub.guide.infrastructure;
 
 import com.smartsub.guide.domain.GuideDocument;
 import com.smartsub.guide.domain.GuideDocumentProjection;
+import com.smartsub.guide.domain.GuideDocumentScoredProjection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -45,4 +46,17 @@ public interface GuideDocumentJpaRepository extends JpaRepository<GuideDocument,
     @Modifying
     @Query(value = "DELETE FROM p_guide_documents WHERE store_id = CAST(:storeId AS uuid)", nativeQuery = true)
     void deleteAllByStoreId(@Param("storeId") UUID storeId);
+
+    @Query(value = """
+    SELECT id, store_id, content, (embedding <=> CAST(:embedding AS vector)) AS distance
+    FROM p_guide_documents
+    WHERE store_id = CAST(:storeId AS uuid)
+    ORDER BY embedding <=> CAST(:embedding AS vector)
+    LIMIT :topK
+    """, nativeQuery = true)
+    List<GuideDocumentScoredProjection> findTopKBySimilarityWithScore(
+        @Param("storeId") String storeId,
+        @Param("embedding") String embedding,
+        @Param("topK") int topK
+    );
 }
