@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  *   4) 콘솔 출력 표를 캡처해서 포트폴리오에 사용
  *   5) 확인 후 다시 @Disabled로 되돌려 평소 빌드에 안 끼게 한다
  */
-//@Disabled("실제 OpenAI 호출 + DB가 필요한 수동 평가용 테스트. 실행 시 이 줄을 지우세요.")
+@Disabled("실제 OpenAI 호출 + DB가 필요한 수동 평가용 테스트. 실행 시 이 줄을 지우세요.")
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
