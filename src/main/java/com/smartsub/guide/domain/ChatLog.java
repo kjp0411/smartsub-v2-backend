@@ -46,20 +46,32 @@ public class ChatLog {
     @Column(name = "category")
     private ChatCategory category;
 
+    @Column(name = "latency_ms")
+    private Long latencyMs;
+
+    @Column(name = "prompt_tokens")
+    private Integer promptTokens;
+
+    @Column(name = "completion_tokens")
+    private Integer completionTokens;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    private ChatLog(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category) {
+    private ChatLog(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category, Long latencyMs, Integer promptTokens, Integer completionTokens) {
         this.storeId = storeId;
         this.tableNumber = tableNumber;
         this.question = question;
         this.answer = answer;
         this.language = language;
         this.category = category;
+        this.latencyMs = latencyMs;
+        this.promptTokens = promptTokens;
+        this.completionTokens = completionTokens;
     }
 
-    public static ChatLog create(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category) {
-        return new ChatLog(storeId, tableNumber, question, answer, language, category);
+    public static ChatLog create(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category, Long latencyMs, Integer promptTokens, Integer completionTokens) {
+        return new ChatLog(storeId, tableNumber, question, answer, language, category, latencyMs, promptTokens, completionTokens);
     }
 }

@@ -12,11 +12,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -30,6 +31,8 @@ public class ChatService {
     record LlmChatResponse(String answer, String category) {}
 
     public ChatResult chat(ChatCommand command) {
+        long startedAt = System.currentTimeMillis();
+
         String hypotheticalAnswer = hydeQueryExpander.expand(command.question());
         String questionEmbedding = embeddingService.embedToString(hypotheticalAnswer);
 
@@ -43,6 +46,8 @@ public class ChatService {
         String categoryList = Arrays.stream(ChatCategory.values())
             .map(Enum::name)
             .collect(Collectors.joining(", "));
+
+        BeanOutputConverter<LlmChatResponse> outputConverter = new BeanOutputConverter<>(LlmChatResponse.class);
 
         String prompt = """
             당신은 매장의 AI 점장입니다. 아래 매장 정보를 바탕으로 손님의 질문에 답변하세요.
@@ -60,15 +65,26 @@ public class ChatService {
 
             [손님 질문]
             %s
-            """.formatted(categoryList, context, command.question());
 
-        LlmChatResponse llmResponse = chatClient.prompt()
+            %s
+            """.formatted(categoryList, context, command.question(), outputConverter.getFormat());
+
+        ChatResponse chatResponse = chatClient.prompt()
             .user(prompt)
             .call()
-            .entity(LlmChatResponse.class);
+            .chatResponse();
+
+        String rawContent = chatResponse.getResult().getOutput().getText();
+        LlmChatResponse llmResponse = outputConverter.convert(rawContent);
 
         String answer = llmResponse.answer();
         ChatCategory category = ChatCategory.from(llmResponse.category());
+
+        Usage usage = chatResponse.getMetadata().getUsage();
+        Integer promptTokens = usage != null ? usage.getPromptTokens() : null;
+        Integer completionTokens = usage != null ? usage.getCompletionTokens() : null;
+
+        long latencyMs = System.currentTimeMillis() - startedAt;
 
         Language language = detectLanguage(command.question());
         ChatLogEvent event = new ChatLogEvent(
@@ -77,7 +93,10 @@ public class ChatService {
             command.question(),
             answer,
             language,
-            category.name()
+            category.name(),
+            latencyMs,
+            promptTokens,
+            completionTokens
         );
         chatLogProducer.send(event);
 
