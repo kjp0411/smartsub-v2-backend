@@ -74,4 +74,9 @@ public class ChatLog {
     public static ChatLog create(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category, Long latencyMs, Integer promptTokens, Integer completionTokens) {
         return new ChatLog(storeId, tableNumber, question, answer, language, category, latencyMs, promptTokens, completionTokens);
     }
+
+    // 지연시간/토큰 정보가 필요 없는 기존 테스트 호환용 오버로드
+    public static ChatLog create(UUID storeId, String tableNumber, String question, String answer, Language language, ChatCategory category) {
+        return new ChatLog(storeId, tableNumber, question, answer, language, category, null, null, null);
+    }
 }
