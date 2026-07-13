@@ -9,6 +9,9 @@ public record ChatLogEvent(
    String question,
    String answer,
    Language language,
-   String category
+   String category,
+   long latencyMs,
+   Integer promptTokens,
+    Integer completionTokens
 ) {
 }

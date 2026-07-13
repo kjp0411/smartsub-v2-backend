@@ -1,8 +1,8 @@
 package com.smartsub.guide.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,10 +17,16 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.metadata.ChatResponseMetadata;
+import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 
 @ExtendWith(MockitoExtension.class)
 class ChatServiceTest {
@@ -50,7 +56,7 @@ class ChatServiceTest {
     private ChatService chatService;
 
     @Test
-    @DisplayName("질문에 대해 유사 문서를 검색하고 AI 응답을 생성한다")
+    @DisplayName("질문에 대해 유사 문서를 검색하고 AI 응답 및 토큰 사용량을 기록한다")
     void chat_success() {
         // Given
         UUID storeId = UUID.randomUUID();
@@ -71,12 +77,27 @@ class ChatServiceTest {
         when(guideDocumentRepository.findTopKBySimilarity(storeId, "[0.1, 0.2, 0.3]", 3))
             .thenReturn(List.of(projection));
 
+        String rawJson = """
+            {"answer": "화장실은 1층 엘리베이터 옆에 있습니다.", "category": "FACILITY"}
+            """;
+        AssistantMessage assistantMessage = new AssistantMessage(rawJson);
+        Generation generation = new Generation(assistantMessage);
+
+        Usage usage = mock(Usage.class);
+        when(usage.getPromptTokens()).thenReturn(420);
+        when(usage.getCompletionTokens()).thenReturn(35);
+
+        ChatResponseMetadata metadata = mock(ChatResponseMetadata.class);
+        when(metadata.getUsage()).thenReturn(usage);
+
+        ChatResponse chatResponse = mock(ChatResponse.class);
+        when(chatResponse.getResult()).thenReturn(generation);
+        when(chatResponse.getMetadata()).thenReturn(metadata);
+
         when(chatClient.prompt()).thenReturn(requestSpec);
         when(requestSpec.user(anyString())).thenReturn(requestSpec);
         when(requestSpec.call()).thenReturn(callResponseSpec);
-        when(callResponseSpec.entity(ChatService.LlmChatResponse.class))
-            .thenReturn(new ChatService.LlmChatResponse(
-                "화장실은 1층 엘리베이터 옆에 있습니다.", "FACILITY"));
+        when(callResponseSpec.chatResponse()).thenReturn(chatResponse);
 
         // When
         ChatResult result = chatService.chat(command);
@@ -84,6 +105,12 @@ class ChatServiceTest {
         // Then
         assertThat(result.answer()).isEqualTo("화장실은 1층 엘리베이터 옆에 있습니다.");
         assertThat(result.category()).isEqualTo("FACILITY");
-        verify(chatLogProducer).send(any(ChatLogEvent.class));
+
+        ArgumentCaptor<ChatLogEvent> eventCaptor = ArgumentCaptor.forClass(ChatLogEvent.class);
+        verify(chatLogProducer).send(eventCaptor.capture());
+        ChatLogEvent capturedEvent = eventCaptor.getValue();
+        assertThat(capturedEvent.promptTokens()).isEqualTo(420);
+        assertThat(capturedEvent.completionTokens()).isEqualTo(35);
+        assertThat(capturedEvent.latencyMs()).isGreaterThanOrEqualTo(0);
     }
 }

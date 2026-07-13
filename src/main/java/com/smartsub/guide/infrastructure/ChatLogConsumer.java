@@ -28,11 +28,15 @@ public class ChatLogConsumer {
             event.question(),
             event.answer(),
             event.language(),
-            category
+            category,
+            event.latencyMs(),
+            event.promptTokens(),
+            event.completionTokens()
         );
         chatLogRepository.save(chatLog);
 
         long elapsed = System.currentTimeMillis() - start;
-        log.info("채팅 로그 비동기 저장 완료: storeId={}, 저장 시간={}ms", event.storeId(), elapsed);
+        log.info("채팅 로그 비동기 저장 완료: storeId={}, 저장 시간={}ms, 응답 지연={}ms, 토큰(prompt/completion)={}/{}",
+            event.storeId(), elapsed, event.latencyMs(), event.promptTokens(), event.completionTokens());
     }
 }
