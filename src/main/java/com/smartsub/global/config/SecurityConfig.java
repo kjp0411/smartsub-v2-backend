@@ -61,6 +61,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 // 손님용 AI 챗봇 — 비인증 QR 접근
                 .requestMatchers("/api/v1/guide/chat").permitAll()
+                // 모니터링 스크랩용 — 인증 없이 허용
+                .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
                 // 사장님용 가이드 문서 관리 — 인증 필요
                 .requestMatchers("/api/v1/guide/embed").authenticated()
                 .requestMatchers("/api/v1/guide/documents").authenticated()
