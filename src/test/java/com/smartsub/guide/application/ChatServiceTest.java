@@ -12,8 +12,11 @@ import com.smartsub.guide.application.dto.ChatResult;
 import com.smartsub.guide.domain.GuideDocumentProjection;
 import com.smartsub.guide.domain.GuideDocumentRepository;
 import com.smartsub.guide.infrastructure.ChatLogProducer;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,8 +55,21 @@ class ChatServiceTest {
     @Mock
     private HydeQueryExpander hydeQueryExpander;
 
-    @InjectMocks
     private ChatService chatService;
+
+    @BeforeEach
+    void setUp() {
+        // mock MeterRegistry로는 Timer가 정상 동작하지 않아 SimpleMeterRegistry로 직접 생성 (@InjectMocks는 비-mock 필드를 채우지 못함)
+        MeterRegistry meterRegistry = new SimpleMeterRegistry();
+        chatService = new ChatService(
+            chatClient,
+            embeddingService,
+            guideDocumentRepository,
+            chatLogProducer,
+            hydeQueryExpander,
+            meterRegistry
+        );
+    }
 
     @Test
     @DisplayName("질문에 대해 유사 문서를 검색하고 AI 응답 및 토큰 사용량을 기록한다")

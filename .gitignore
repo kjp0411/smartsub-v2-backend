@@ -38,3 +38,6 @@ out/
 
 ### Environment ###
 .env
+
+### Logs ###
+app-logs*.txt

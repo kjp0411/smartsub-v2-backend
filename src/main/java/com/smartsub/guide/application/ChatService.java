@@ -8,6 +8,8 @@ import com.smartsub.guide.domain.GuideDocumentRepository;
 import com.smartsub.guide.domain.GuideDocumentProjection;
 import com.smartsub.guide.domain.Language;
 import com.smartsub.guide.infrastructure.ChatLogProducer;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,17 +29,18 @@ public class ChatService {
     private final GuideDocumentRepository guideDocumentRepository;
     private final ChatLogProducer chatLogProducer;
     private final HydeQueryExpander hydeQueryExpander;
+    private final MeterRegistry meterRegistry;
 
     record LlmChatResponse(String answer, String category) {}
 
     public ChatResult chat(ChatCommand command) {
         long startedAt = System.currentTimeMillis();
 
-        String hypotheticalAnswer = hydeQueryExpander.expand(command.question());
-        String questionEmbedding = embeddingService.embedToString(hypotheticalAnswer);
+        String hypotheticalAnswer = timeStage("hyde", () -> hydeQueryExpander.expand(command.question()));
+        String questionEmbedding = timeStage("embedding", () -> embeddingService.embedToString(hypotheticalAnswer));
 
-        List<GuideDocumentProjection> documents = guideDocumentRepository
-            .findTopKBySimilarity(command.storeId(), questionEmbedding, 3);
+        List<GuideDocumentProjection> documents = timeStage("db_search", () ->
+            guideDocumentRepository.findTopKBySimilarity(command.storeId(), questionEmbedding, 3));
 
         String context = documents.stream()
             .map(GuideDocumentProjection::getContent)
@@ -69,10 +72,10 @@ public class ChatService {
             %s
             """.formatted(categoryList, context, command.question(), outputConverter.getFormat());
 
-        ChatResponse chatResponse = chatClient.prompt()
+        ChatResponse chatResponse = timeStage("final_completion", () -> chatClient.prompt()
             .user(prompt)
             .call()
-            .chatResponse();
+            .chatResponse());
 
         String rawContent = chatResponse.getResult().getOutput().getText();
         LlmChatResponse llmResponse = outputConverter.convert(rawContent);
@@ -108,5 +111,18 @@ public class ChatService {
         if (text.matches(".*[\\u3040-\\u30FF].*")) return Language.JAPANESE;
         if (text.matches(".*[\\u4E00-\\u9FFF].*")) return Language.CHINESE;
         return Language.ENGLISH;
+    }
+
+    private <T> T timeStage(String stage, java.util.function.Supplier<T> block) {
+        Timer.Sample sample = Timer.start(meterRegistry);
+        try {
+            return block.get();
+        } finally {
+            sample.stop(Timer.builder("chat.stage.duration")
+                .description("SmartSub chat pipeline stage duration")
+                .tag("stage", stage)
+                .publishPercentileHistogram()
+                .register(meterRegistry));
+        }
     }
 }
