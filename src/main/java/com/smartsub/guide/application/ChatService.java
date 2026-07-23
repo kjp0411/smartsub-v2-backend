@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ChatService {
 
-    private final ChatClient chatClient;
+    private final ChatCompletionClient chatCompletionClient;
     private final EmbeddingService embeddingService;
     private final GuideDocumentRepository guideDocumentRepository;
     private final ChatLogProducer chatLogProducer;
@@ -72,10 +71,8 @@ public class ChatService {
             %s
             """.formatted(categoryList, context, command.question(), outputConverter.getFormat());
 
-        ChatResponse chatResponse = timeStage("final_completion", () -> chatClient.prompt()
-            .user(prompt)
-            .call()
-            .chatResponse());
+        ChatResponse chatResponse = timeStage("final_completion", () ->
+            chatCompletionClient.complete(prompt));
 
         String rawContent = chatResponse.getResult().getOutput().getText();
         LlmChatResponse llmResponse = outputConverter.convert(rawContent);

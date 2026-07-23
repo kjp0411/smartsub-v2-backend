@@ -68,6 +68,14 @@ management:
       percentiles:
         http.server.requests: 0.5, 0.95, 0.99
 
+resilience4j:
+  ratelimiter:
+    instances:
+      openai:
+        limit-for-period: 7         # 초당 7회 허용 (분당 420회로, OpenAI RPM 500 한도에 여유를 둠)
+        limit-refresh-period: 1s
+        timeout-duration: 3s        # 허용량이 찰 때까지 최대 3초 대기, 그래도 넘으면 실패 처리
+
 jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: 3600000

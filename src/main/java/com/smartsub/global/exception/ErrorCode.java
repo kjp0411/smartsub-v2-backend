@@ -24,7 +24,10 @@ public enum ErrorCode {
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "INVALID_PASSWORD", "비밀번호가 올바르지 않습니다."),
 
     // Report
-    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_NOT_FOUND", "리포트를 찾을 수 없습니다.");
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT_NOT_FOUND", "리포트를 찾을 수 없습니다."),
+
+    // Chat
+    CHAT_SERVICE_BUSY(HttpStatus.TOO_MANY_REQUESTS, "CHAT_SERVICE_BUSY", "일시적으로 요청이 몰려 있습니다. 잠시 후 다시 시도해주세요.");
 
     private final HttpStatus httpStatus;
     private final String code;
