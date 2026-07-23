@@ -1,5 +1,6 @@
 package com.smartsub.guide.application;
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -23,6 +24,12 @@ public class HydeQueryExpander {
 
     private final ChatClient chatClient;
 
+    /**
+     * OpenAI RPM 한도(계정 기준 500/분) 초과를 방지하기 위해 초당 호출량을 제한한다.
+     * 한도 초과로 RequestNotPermitted가 발생해도 아래 catch(Exception)가 그대로 잡아
+     * 원본 질문으로 폴백하므로, 검색 품질만 약간 떨어질 뿐 요청 자체는 실패하지 않는다.
+     */
+    @RateLimiter(name = "openai")
     public String expand(String question) {
         String hydePrompt = """
             당신은 매장 안내 문서를 작성하는 담당자입니다.

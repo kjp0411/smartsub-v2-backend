@@ -21,10 +21,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.metadata.Usage;
@@ -35,7 +33,7 @@ import org.springframework.ai.chat.model.Generation;
 class ChatServiceTest {
 
     @Mock
-    private ChatClient chatClient;
+    private ChatCompletionClient chatCompletionClient;
 
     @Mock
     private EmbeddingService embeddingService;
@@ -47,12 +45,6 @@ class ChatServiceTest {
     private ChatLogProducer chatLogProducer;
 
     @Mock
-    private ChatClient.ChatClientRequestSpec requestSpec;
-
-    @Mock
-    private ChatClient.CallResponseSpec callResponseSpec;
-
-    @Mock
     private HydeQueryExpander hydeQueryExpander;
 
     private ChatService chatService;
@@ -62,7 +54,7 @@ class ChatServiceTest {
         // mock MeterRegistry로는 Timer가 정상 동작하지 않아 SimpleMeterRegistry로 직접 생성 (@InjectMocks는 비-mock 필드를 채우지 못함)
         MeterRegistry meterRegistry = new SimpleMeterRegistry();
         chatService = new ChatService(
-            chatClient,
+            chatCompletionClient,
             embeddingService,
             guideDocumentRepository,
             chatLogProducer,
@@ -110,10 +102,7 @@ class ChatServiceTest {
         when(chatResponse.getResult()).thenReturn(generation);
         when(chatResponse.getMetadata()).thenReturn(metadata);
 
-        when(chatClient.prompt()).thenReturn(requestSpec);
-        when(requestSpec.user(anyString())).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(callResponseSpec);
-        when(callResponseSpec.chatResponse()).thenReturn(chatResponse);
+        when(chatCompletionClient.complete(anyString())).thenReturn(chatResponse);
 
         // When
         ChatResult result = chatService.chat(command);
