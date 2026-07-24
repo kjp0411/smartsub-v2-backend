@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${TEST_DB_URL}
+    username: ${TEST_DB_USERNAME}
+    password: ${TEST_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  ai:
+    openai:
+      api-key: dummy-key-for-test
+
+jwt:
+  secret: ${JWT_SECRET}

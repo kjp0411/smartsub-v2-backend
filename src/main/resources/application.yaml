@@ -6,16 +6,76 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         show_sql: true
     open-in-view: false
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: text-embedding-3-small
+      chat:
+        options:
+          model: gpt-4o-mini
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: smartsub-chat-log-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.smartsub.guide.application.dto"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.smartsub.guide.application.dto.ChatLogEvent
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+
+resilience4j:
+  ratelimiter:
+    instances:
+      openai:
+        limit-for-period: 7         # 초당 7회 허용 (분당 420회로, OpenAI RPM 500 한도에 여유를 둠)
+        limit-refresh-period: 1s
+        timeout-duration: 3s        # 허용량이 찰 때까지 최대 3초 대기, 그래도 넘으면 실패 처리
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 3600000
